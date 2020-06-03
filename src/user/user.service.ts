@@ -14,7 +14,11 @@ export class UserService {
 
     async create(doc: User) {
         const result = await new this.userModel(doc).save();
-        return {"id" : result.id};
+        return { "id": result.id };
+    }
+
+    async findByEmail(email: String) {
+        return await this.userModel.find({ email });
     }
 
     async findById(id: number) {
