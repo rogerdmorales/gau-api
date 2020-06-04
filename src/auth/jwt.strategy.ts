@@ -20,7 +20,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         }
         return user;
     }
-
 }
 
 export interface JwtPayload {  username: string;}

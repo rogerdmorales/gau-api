@@ -11,11 +11,11 @@ export const UserSchema = new mongoose.Schema({
 });
 
 export interface User {
-    id: String;
-    name: String;
-    email: String;
-    password: String;
-    hasDisability: Boolean;
-    photo: String;
-    active: Boolean;
+    id: string;
+    name: string;
+    email: string;
+    password: string;
+    hasDisability: boolean;
+    photo: string;
+    active: boolean;
 }

@@ -1,8 +1,10 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
-import { UserService } from 'src/user/user.service';
+import { UserService } from '../user/user.service';
 import { JwtService } from '@nestjs/jwt';
 import { JwtPayload } from './jwt.strategy';
 import { User } from 'src/user/user.model';
+import { LoginDTO } from './dto/login.dto';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class AuthService {
@@ -11,14 +13,18 @@ export class AuthService {
         private readonly jwtService: JwtService) { }
 
 
-    async login({ username, password }) {
-        const user = await this.userService.findByEmail(username);
+    async login(loginDTO: LoginDTO) {
+        const user = await this.userService.findByEmail(loginDTO.username);
 
         if (!user) {
             throw new HttpException('Invalid token', HttpStatus.UNAUTHORIZED);
         }
 
-        // validar senha
+        const isPasswordValid = await this.validatePassword(loginDTO.password, user.password);
+
+        if (!isPasswordValid) {
+            throw new HttpException('Invalid Password', HttpStatus.UNAUTHORIZED);
+        }
 
         const token = this._createToken(user);
 
@@ -29,6 +35,7 @@ export class AuthService {
     }
 
     async validateUser(payload: JwtPayload): Promise<User> {
+        console.log(JSON.stringify(payload));
         const user = await this.userService.findByEmail(payload.username);
         if (!user) {
             throw new HttpException('Invalid token', HttpStatus.UNAUTHORIZED);
@@ -36,8 +43,19 @@ export class AuthService {
         return user;
     }
 
-    private _createToken({ username }): String {
-        const user: JwtPayload = { username };
+    async validatePassword(loginPassword: string, userPassword: string): Promise<boolean> {
+        return new Promise((resolve, reject) => {
+            bcrypt.compare(loginPassword, userPassword, function(err, result) {
+                if (err) {
+                    reject(err);
+                }
+                resolve(result);
+            })
+        });
+    }
+
+    private _createToken({ email }): String {
+        const user: JwtPayload = { username: email };
         return this.jwtService.sign(user);
     }
 

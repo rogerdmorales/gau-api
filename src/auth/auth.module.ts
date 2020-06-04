@@ -1,11 +1,13 @@
-import { Module } from '@nestjs/common';
+import { Module, Global } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { UserModule } from '../user/user.module';
 import { JwtStrategy } from './jwt.strategy';
-import { AuthService } from './auth/auth.service';
+import { AuthService } from './auth.service';
+import { AuthController } from './auth.controller';
 
 
+@Global()
 @Module({
     imports: [
         UserModule,
@@ -15,9 +17,14 @@ import { AuthService } from './auth/auth.service';
             session: false
         }),
         JwtModule.register({
-            secretOrPrivateKey: 'secret12356789'
+            secret: 'secret12356789'
         })
     ],
-    providers: [UserModule, JwtStrategy, AuthService]
+    providers: [JwtStrategy, AuthService],
+    controllers: [AuthController],
+    exports: [
+        PassportModule,
+        JwtModule
+    ]
 })
 export class AuthModule { }
