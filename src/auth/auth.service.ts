@@ -5,6 +5,7 @@ import { JwtPayload } from './jwt.strategy';
 import { User } from 'src/user/user.model';
 import { LoginDTO } from './dto/login.dto';
 import * as bcrypt from 'bcrypt';
+import { UserDTO } from 'src/user/user.dto';
 
 @Injectable()
 export class AuthService {
@@ -26,10 +27,12 @@ export class AuthService {
             throw new HttpException('Invalid Password', HttpStatus.UNAUTHORIZED);
         }
 
+        const userDTO = UserDTO.fromUser(user);
         const token = this._createToken(user);
 
+
         return {
-            username: user.email,
+            user: userDTO,
             token
         };
     }
