@@ -16,6 +16,7 @@ export class UserController {
 
   @Post()
   create(@Body() user: User) {
+    console.log('user: ' + JSON.stringify(user));
     return this.service.create(user);
   }
 

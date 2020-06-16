@@ -16,6 +16,8 @@ export class UserService {
     async create(user: User) {
         const hash = await this.getHash(user.password);
         user.password = hash;
+        user.active = true;
+        user.hasDisability = false;
         const result = await new this.userModel(user).save();
         return { "id": result.id };
     }
