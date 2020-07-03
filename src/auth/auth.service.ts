@@ -1,12 +1,14 @@
-import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
-import { UserService } from '../user/user.service';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { JwtPayload } from './jwt.strategy';
-import { User } from 'src/user/user.model';
-import { LoginDTO } from './dto/login.dto';
 import * as bcrypt from 'bcrypt';
-import { UserDTO } from '../user/user.dto';
+import { User } from 'src/user/user.model';
+import { UserService } from '../user/user.service';
+import { LoginDTO } from './dto/login.dto';
+import { JwtPayload } from './jwt.strategy';
+import { OAuth2Client } from 'google-auth-library';
+import { AuthMethod } from './enum/auth-method';
 
+const CLIENT_ID = '274535529742-jor0pqgm5390s1ef96a3kism5jkv4khr.apps.googleusercontent.com';
 @Injectable()
 export class AuthService {
     constructor(
@@ -28,11 +30,37 @@ export class AuthService {
         }
         const token = this._createToken(user);
 
-        console.log('user> ' + JSON.stringify(user));
+        return {
+            user,
+            token
+        };
+    }
 
+    async loginGoogle(idToken: string) {
+        const client = new OAuth2Client(CLIENT_ID);
+        
+        const ticket = await client.verifyIdToken({
+            idToken,
+            audience: CLIENT_ID
+        });
+
+        const userInfo = ticket.getPayload();
+        let user = await this.userService.findByEmail(userInfo.email);
+
+        if (!user) {
+            user = {
+                name: userInfo.name,
+                email: userInfo.email,
+                photo: userInfo.picture,
+                authMethod: AuthMethod.GOOGLE
+            }
+            await this.userService.create(user);
+        }
+
+        const token = this._createToken(user);
 
         return {
-            user: user,
+            user,
             token
         };
     }
@@ -48,7 +76,7 @@ export class AuthService {
 
     async validatePassword(loginPassword: string, userPassword: string): Promise<boolean> {
         return new Promise((resolve, reject) => {
-            bcrypt.compare(loginPassword, userPassword, function(err, result) {
+            bcrypt.compare(loginPassword, userPassword, function (err, result) {
                 if (err) {
                     reject(err);
                 }
