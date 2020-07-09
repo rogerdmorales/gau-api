@@ -8,14 +8,14 @@ import { PlaceService } from './place.service';
 @Module({
   imports: [
     MongooseModule.forFeature([
-      { name: 'PlaceRating', schema: PlaceSchema },
+      { name: 'Place', schema: PlaceSchema },
       { name: 'Comment', schema: CommentSchema },
     ])
   ],
   controllers: [PlaceController],
   providers: [PlaceService],
   exports: [
-    PlaceService
+    PlaceService,
   ]
 })
 export class PlaceRatingModule {}
