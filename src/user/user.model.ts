@@ -1,6 +1,6 @@
 
 import * as mongoose from 'mongoose';
-import { AuthMethod } from 'src/auth/enum/auth-method';
+import { AuthMethod } from '../auth/enum/auth-method';
 
 export const UserSchema = new mongoose.Schema({
     name: { type: String, required: true },

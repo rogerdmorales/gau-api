@@ -1,11 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import PlaceRatingDTO from './dto/place-rating.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { Place } from './place.model';
 import { Comment } from './comment.model';
+import PlaceRatingDTO from './dto/place-rating.dto';
 import { Answer } from './enum/answer.enum';
-import { User } from '../user/user.model';
+import { Place } from './place.model';
 
 @Injectable()
 export class PlaceService {
@@ -27,8 +26,8 @@ export class PlaceService {
                 placeId: placeRating.placeId,
                 averageScore: this.calculateScore(placeRating.answers)
             }
-            const result = await this.placeModel(place).save();
-            placeId = result._id;
+            place = await this.placeModel(place).save();
+            placeId = place._id;
         } else {
             place.averageScore = (place.averageScore + userScore) / 2;
             placeId = place._id;
@@ -40,7 +39,15 @@ export class PlaceService {
             author: user._id,
             place: placeId
         };
-        await new this.commentModel(comment).save();
+        const commentId = await new this.commentModel(comment).save();
+
+        place.comments.push(commentId);
+        await this.placeModel(place).save();
+    }
+
+    async findPlace(placeId: string) {
+        return await this.placeModel.findOne({ placeId })
+            .populate('comments');
     }
 
     async findById(placeId: string) {

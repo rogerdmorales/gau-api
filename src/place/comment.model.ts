@@ -1,4 +1,6 @@
 import * as mongoose from 'mongoose';
+import { Place } from './place.model';
+import { User } from '../user/user.model';
 
 export const CommentSchema = new mongoose.Schema({
     content: { type: String, required: true },
@@ -19,9 +21,9 @@ export const CommentSchema = new mongoose.Schema({
 
 export interface Comment {
     content: string,
-    author: string,
-    place: string,
+    author: User,
+    place: Place,
     likes: number,
-    parent: string,
+    parent: Comment,
     responses: Comment[]
 }
