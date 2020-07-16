@@ -25,6 +25,12 @@ export class PlaceController {
         return this.service.replyComment(param.id, param.commentId, comment, request.user);
     }
 
+    @Post(':id/comments/:commentId/like')
+    @UseGuards(AuthGuard())
+    likeComment(@Param() param) {
+        return this.service.likeComment(param.id, param.commentId);
+    }
+
     @Get(':id')
     @UseGuards(AuthGuard())
     getPlace(@Param() param) {

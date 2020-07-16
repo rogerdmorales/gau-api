@@ -54,7 +54,13 @@ export class PlaceService {
 
         parentComment.responses.push(comment._id);
         
-        await this.commentModel(parentComment).save();
+        await this.commentModel.findByIdAndUpdate(parentId, parentComment);
+    }
+
+    async likeComment(placeId: any, commentId: any) {
+        const comment = await this.commentModel.findOne({ place: placeId, _id: commentId });
+        comment.likes++;
+        await this.commentModel.findByIdAndUpdate(commentId, comment);
     }
 
     async findPlace(placeId: string) {
