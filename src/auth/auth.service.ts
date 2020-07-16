@@ -66,7 +66,6 @@ export class AuthService {
     }
 
     async validateUser(payload: JwtPayload): Promise<User> {
-        console.log(JSON.stringify(payload));
         const user = await this.userService.findByEmail(payload.username);
         if (!user) {
             throw new HttpException('Invalid token', HttpStatus.UNAUTHORIZED);

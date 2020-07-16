@@ -45,9 +45,26 @@ export class PlaceService {
         await this.placeModel(place).save();
     }
 
+    async replyComment(placeId: string, parentId: string, comment: Comment, user: any) {
+        const parentComment = await this.commentModel.findById(parentId);
+        comment.parent = parentComment._id;
+        comment.author = user._id;
+        comment.place = placeId;
+        comment = await this.commentModel(comment).save();
+
+        parentComment.responses.push(comment._id);
+        
+        await this.commentModel(parentComment).save();
+    }
+
     async findPlace(placeId: string) {
-        return await this.placeModel.findOne({ placeId })
-            .populate('comments');
+        const place = await this.placeModel.findOne({ placeId });
+
+        const comments = await this.commentModel.find({ place: place._id, parent: null })
+            .populate('responses');
+        place.comments = comments;
+
+        return place;
     }
 
     async findById(placeId: string) {
