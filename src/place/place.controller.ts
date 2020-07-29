@@ -32,7 +32,6 @@ export class PlaceController {
     }
 
     @Get(':id')
-    @UseGuards(AuthGuard())
     getPlace(@Param() param) {
         return this.service.findPlace(param.id);
     }

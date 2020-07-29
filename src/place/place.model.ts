@@ -10,11 +10,13 @@ export const PlaceSchema = new mongooose.Schema({
             type: mongooose.Schema.Types.ObjectId,
             ref: 'Comment'
         }
-    ]
+    ],
+    reviewers: { type: Number, required: true, default: 1 }
 });
 
 export interface Place {
     placeId: string,
     averageScore: number,
-    comments: Comment[]
+    comments: Comment[],
+    reviewers: number
 }

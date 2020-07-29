@@ -30,6 +30,7 @@ export class PlaceService {
             placeId = place._id;
         } else {
             place.averageScore = (place.averageScore + userScore) / 2;
+            place.reviewers++;
             placeId = place._id;
             await this.placeModel.findByIdAndUpdate(placeId, place);
         }
@@ -66,8 +67,16 @@ export class PlaceService {
     async findPlace(placeId: string) {
         const place = await this.placeModel.findOne({ placeId });
 
+        if (!place) {
+            return null;
+        }
+
         const comments = await this.commentModel.find({ place: place._id, parent: null })
-            .populate('responses');
+            .populate({
+                path: 'responses',
+                populate: { path: 'author' }
+            })
+            .populate('author');
         place.comments = comments;
 
         return place;
