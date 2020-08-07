@@ -12,19 +12,17 @@ export class PlaceService {
     constructor(
         @InjectModel('Place') private readonly placeModel: Model<Place>,
         @InjectModel('Comment') private readonly commentModel: Model<Comment>
-    ) {
-
-    }
+    ) { }
 
     async ratePlace(placeRating: PlaceRatingDTO, user: any) {
         let place = await this.findById(placeRating.placeId);
-        const userScore = this.calculateScore(placeRating.answers);
+        const userScore = this._calculateScore(placeRating);
         let placeId = '';
 
         if (!place) {
             place = {
                 placeId: placeRating.placeId,
-                averageScore: this.calculateScore(placeRating.answers)
+                averageScore: this._calculateScore(placeRating)
             }
             place = await this.placeModel(place).save();
             placeId = place._id;
@@ -54,8 +52,15 @@ export class PlaceService {
         comment = await this.commentModel(comment).save();
 
         parentComment.responses.push(comment._id);
-        
-        await this.commentModel.findByIdAndUpdate(parentId, parentComment);
+
+        const updatedComment = await this.commentModel.findByIdAndUpdate(parentId, parentComment, { new: true })
+            .populate({
+                path: 'responses',
+                populate: { path: 'author' }
+            })
+            .populate('author');
+
+        return updatedComment;
     }
 
     async likeComment(placeId: any, commentId: any) {
@@ -86,19 +91,25 @@ export class PlaceService {
         return await this.placeModel.findOne({ placeId });
     }
 
-    calculateScore(answers: string[]): number {
-        let sumScores = 0;
-        let numAnswers = 0;
+    private _calculateScore(placeRating: PlaceRatingDTO): number {
+        const sumScores = placeRating.question1
+            + placeRating.question2
+            + placeRating.question3
+            + placeRating.question4
+            + placeRating.question5;
 
-        answers.forEach(answer => {
-            if (answer === Answer.NO) {
-                numAnswers++;
-            } else if (answer === Answer.YES) {
-                sumScores += 5;
-                numAnswers++;
-            }
-        });
+        return sumScores / 5;
+    }
 
-        return sumScores / numAnswers;
+    private _getAnswerScore(answer: string) {
+        if (answer === Answer.NO) {
+            return 0;
+        } else if (answer === Answer.YES) {
+            return 5;
+        } else if (answer === Answer.DONT_KNOW) {
+            return 2.5;
+        } else {
+            return +answer;
+        }
     }
 }

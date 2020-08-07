@@ -1,5 +1,5 @@
 export enum Answer {
-    YES = 'Sim',
-    NO = 'Não',
-    DONT_KNOW = 'Não sei'
+    YES = 'YES',
+    NO = 'NO',
+    DONT_KNOW = 'DONT_KNOW'
 }
