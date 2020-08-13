@@ -105,12 +105,12 @@ export class PlaceService {
     }
 
     async findPlaceRatingsByUser(user: any) {
-        return await this.placeRatingHistoryModel.find({ userId: user._id })
+        return await this.placeRatingHistoryModel.find({ user: user._id })
             .populate('comment');
     }
 
     async findPlaceRatingByUserAndPlaceId(user: any, placeId: string) {
-        return await this.placeRatingHistoryModel.findOne({ userId: user._id, placeId })
+        return await this.placeRatingHistoryModel.findOne({ user: user._id, placeId })
             .populate('comment');
     }
 
