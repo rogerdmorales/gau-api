@@ -1,13 +1,13 @@
-import * as mongooose from 'mongoose';
+import * as mongoose from 'mongoose';
 import { Comment } from './comment.model';
 
 
-export const PlaceSchema = new mongooose.Schema({
+export const PlaceSchema = new mongoose.Schema({
     placeId: { type: String, required: true },
     averageScore: { type: Number, required: true },
     comments: [
         {
-            type: mongooose.Schema.Types.ObjectId,
+            type: mongoose.Schema.Types.ObjectId,
             ref: 'Comment'
         }
     ],

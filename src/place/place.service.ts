@@ -5,13 +5,15 @@ import { Comment } from './comment.model';
 import PlaceRatingDTO from './dto/place-rating.dto';
 import { Answer } from './enum/answer.enum';
 import { Place } from './place.model';
+import { PlaceRatingHistory } from './place-rating-history.model';
 
 @Injectable()
 export class PlaceService {
 
     constructor(
         @InjectModel('Place') private readonly placeModel: Model<Place>,
-        @InjectModel('Comment') private readonly commentModel: Model<Comment>
+        @InjectModel('Comment') private readonly commentModel: Model<Comment>,
+        @InjectModel('PlaceRatingHistory') private readonly placeRatingHistoryModel: Model<PlaceRatingHistory>
     ) { }
 
     async ratePlace(placeRating: PlaceRatingDTO, user: any) {
@@ -22,7 +24,7 @@ export class PlaceService {
         if (!place) {
             place = {
                 placeId: placeRating.placeId,
-                averageScore: this._calculateScore(placeRating)
+                averageScore: userScore
             }
             place = await this.placeModel(place).save();
             placeId = place._id;
@@ -38,9 +40,19 @@ export class PlaceService {
             author: user._id,
             place: placeId
         };
-        const commentId = await new this.commentModel(comment).save();
+        const commentId = await this.commentModel(comment).save();
 
         place.comments.push(commentId);
+
+        const placeRatingHistory = {
+            ...placeRating,
+            comment: commentId,
+            score: userScore,
+            user: user._id
+        }
+
+        const placeRatingHistoryId = await this.placeRatingHistoryModel(placeRatingHistory).save();
+        await this.commentModel.findByIdAndUpdate(commentId, { placeRatingHistory: placeRatingHistoryId });
         await this.placeModel(place).save();
     }
 
@@ -81,7 +93,8 @@ export class PlaceService {
                 path: 'responses',
                 populate: { path: 'author' }
             })
-            .populate('author');
+            .populate('author')
+            .populate('placeRatingHistory');
         place.comments = comments;
 
         return place;
@@ -89,6 +102,16 @@ export class PlaceService {
 
     async findById(placeId: string) {
         return await this.placeModel.findOne({ placeId });
+    }
+
+    async findPlaceRatingsByUser(user: any) {
+        return await this.placeRatingHistoryModel.find({ userId: user._id })
+            .populate('comment');
+    }
+
+    async findPlaceRatingByUserAndPlaceId(user: any, placeId: string) {
+        return await this.placeRatingHistoryModel.findOne({ userId: user._id, placeId })
+            .populate('comment');
     }
 
     private _calculateScore(placeRating: PlaceRatingDTO): number {
