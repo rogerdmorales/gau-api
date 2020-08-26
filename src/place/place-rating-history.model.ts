@@ -1,5 +1,6 @@
 import * as mongoose from 'mongoose';
 import { User } from 'src/user/user.model';
+import * as moment from 'moment-timezone';
 
 
 export const PlaceRatingHistorySchema = new mongoose.Schema({
@@ -11,7 +12,8 @@ export const PlaceRatingHistorySchema = new mongoose.Schema({
   question2: { type: Number, required: true },
   question3: { type: Number, required: true },
   question4: { type: Number, required: true },
-  question5: { type: Number, required: true }
+  question5: { type: Number, required: true },
+  date: { type: String, required: true, default: moment().tz('America/Sao_Paulo').format('DD/MM/YYYY')},
 });
 
 
@@ -24,5 +26,6 @@ export interface PlaceRatingHistory {
   question2: number,
   question3: number,
   question4: number,
-  question5: number
+  question5: number,
+  date: string,
 }

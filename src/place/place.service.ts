@@ -56,6 +56,24 @@ export class PlaceService {
         await this.placeModel(place).save();
     }
 
+    async updatePlaceRating(placeRating: PlaceRatingDTO, user: any) {
+        const deletedRating = await this.placeRatingHistoryModel.findOneAndDelete(
+            {
+                user: user._id,
+                placeId: placeRating.placeId
+            }
+        );
+
+        await this.commentModel.deleteOne(
+            {
+                author: user._id,
+                placeRatingHistory: deletedRating._id
+            }
+        );
+
+        await this.ratePlace(placeRating, user);
+    }
+
     async replyComment(placeId: string, parentId: string, comment: Comment, user: any) {
         const parentComment = await this.commentModel.findById(parentId);
         comment.parent = parentComment._id;

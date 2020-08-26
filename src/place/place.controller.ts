@@ -1,4 +1,4 @@
-import { Controller, Get, Req, UseGuards, Post, Body, Param } from '@nestjs/common';
+import { Controller, Get, Req, UseGuards, Post, Body, Param, Put } from '@nestjs/common';
 import { Request } from 'express';
 import { AuthGuard } from '@nestjs/passport';
 import PlaceRatingDTO from './dto/place-rating.dto';
@@ -10,13 +10,19 @@ import { request } from 'http';
 export class PlaceController {
 
     constructor(private service: PlaceService) {
-
     }
 
+    
     @Post('rate')
     @UseGuards(AuthGuard())
     ratePlace(@Body() placeRating: PlaceRatingDTO, @Req() request: Request) {
         return this.service.ratePlace(placeRating, request.user);
+    }
+    
+    @Put('rate')
+    @UseGuards(AuthGuard())
+    updatePlaceRating(@Body() placeRating: PlaceRatingDTO, @Req() request: Request) {
+        return this.service.updatePlaceRating(placeRating, request.user);
     }
 
     @Get('user/ratings')
