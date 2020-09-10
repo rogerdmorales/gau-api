@@ -29,7 +29,11 @@ export class PlaceService {
             place = await this.placeModel(place).save();
             placeId = place._id;
         } else {
-            place.averageScore = (place.averageScore + userScore) / 2;
+            const userRatings = await this.placeRatingHistoryModel.find({ placeId: place.placeId });
+            const sumScores = userRatings.reduce((sum, score) => {
+                return sum + score;
+            });
+            place.averageScore = (sumScores + userScore) / (userRatings.length + 1);
             place.reviewers++;
             placeId = place._id;
             await this.placeModel.findByIdAndUpdate(placeId, place);
