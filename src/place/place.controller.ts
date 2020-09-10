@@ -31,6 +31,12 @@ export class PlaceController {
         return this.service.findPlaceRatingsByUser(request.user);
     }
 
+    @Get(':id/user/ratings')
+    @UseGuards(AuthGuard())
+    getPlaceRatingsByUserAndPlace(@Param() param, @Req() request: Request) {
+        return this.service.findPlaceRatingByUserAndPlaceId(request.user, param.id);
+    }
+
     @Post(':id/comments/:commentId/reply')
     @UseGuards(AuthGuard())
     replyComment(@Param() param, @Body() comment: Comment, @Req() request: Request) {
