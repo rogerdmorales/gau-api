@@ -30,9 +30,11 @@ export class PlaceService {
             placeId = place._id;
         } else {
             const userRatings = await this.placeRatingHistoryModel.find({ placeId: place.placeId });
-            const sumScores = userRatings.reduce((sum, score) => {
-                return sum + score;
+            let sumScores = 0;
+            userRatings.forEach(userRating => {
+                sumScores += userRating.score;
             });
+           
             place.averageScore = (sumScores + userScore) / (userRatings.length + 1);
             place.reviewers++;
             placeId = place._id;
@@ -134,6 +136,13 @@ export class PlaceService {
     async findPlaceRatingByUserAndPlaceId(user: any, placeId: string) {
         return await this.placeRatingHistoryModel.findOne({ user: user._id, placeId })
             .populate('comment');
+    }
+
+    async findPlaceRatingsSummary(placeId: string) {
+        const userRatings = await this.placeRatingHistoryModel.find({ placeId });
+        const question1Score = userRatings.reduce((sum, question1) => {
+            return sum + question1;
+        });
     }
 
     private _calculateScore(placeRating: PlaceRatingDTO): number {

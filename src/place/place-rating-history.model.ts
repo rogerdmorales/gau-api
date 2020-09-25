@@ -20,10 +20,10 @@ export const PlaceRatingHistorySchema = new mongoose.Schema({
 export interface PlaceRatingHistory {
   user: User,
   placeId: string,
-  comment: Comment,
   score: number,
-  question1: number,
+  comment: Comment,
   question2: number,
+  question1: number,
   question3: number,
   question4: number,
   question5: number,
