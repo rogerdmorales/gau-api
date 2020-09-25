@@ -54,4 +54,9 @@ export class PlaceController {
         return this.service.findPlace(param.id);
     }
 
+    @Get(':id/ratings/summary')
+    getPlaceRatingsSummary(@Param() param) {
+        return this.service.findPlaceRatingsSummary(param.id);
+    }
+
 }

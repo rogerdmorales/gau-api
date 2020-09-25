@@ -140,9 +140,20 @@ export class PlaceService {
 
     async findPlaceRatingsSummary(placeId: string) {
         const userRatings = await this.placeRatingHistoryModel.find({ placeId });
-        const question1Score = userRatings.reduce((sum, question1) => {
-            return sum + question1;
-        });
+        let question1Score = 0, question2Score = 0, question3Score = 0, question5Score = 0;
+       userRatings.forEach(userRating => {
+           question1Score += userRating.question1;
+           question2Score += userRating.question2;
+           question3Score += userRating.question3;
+           question5Score += userRating.question5;
+       });
+
+       return {
+           question1: (question1Score / userRatings.length) >= 2.5,
+           question2: (question2Score / userRatings.length) >= 2.5,
+           question3: (question3Score / userRatings.length) >= 2.5,
+           question5: (question5Score / userRatings.length) >= 2.5,
+       }
     }
 
     private _calculateScore(placeRating: PlaceRatingDTO): number {
