@@ -94,7 +94,8 @@ export class PlaceService {
                 path: 'responses',
                 populate: { path: 'author' }
             })
-            .populate('author');
+            .populate('author')
+            .populate('placeRatingHistory');
 
         return updatedComment;
     }
@@ -140,11 +141,12 @@ export class PlaceService {
 
     async findPlaceRatingsSummary(placeId: string) {
         const userRatings = await this.placeRatingHistoryModel.find({ placeId });
-        let question1Score = 0, question2Score = 0, question3Score = 0, question5Score = 0;
+        let question1Score = 0, question2Score = 0, question3Score = 0, question4Score = 0, question5Score = 0;
        userRatings.forEach(userRating => {
            question1Score += userRating.question1;
            question2Score += userRating.question2;
            question3Score += userRating.question3;
+           question4Score += userRating.question4;
            question5Score += userRating.question5;
        });
 
@@ -152,6 +154,7 @@ export class PlaceService {
            question1: (question1Score / userRatings.length) >= 2.5,
            question2: (question2Score / userRatings.length) >= 2.5,
            question3: (question3Score / userRatings.length) >= 2.5,
+           question4: (question4Score / userRatings.length) >= 2.5,
            question5: (question5Score / userRatings.length) >= 2.5,
        }
     }
@@ -164,17 +167,5 @@ export class PlaceService {
             + placeRating.question5;
 
         return sumScores / 5;
-    }
-
-    private _getAnswerScore(answer: string) {
-        if (answer === Answer.NO) {
-            return 0;
-        } else if (answer === Answer.YES) {
-            return 5;
-        } else if (answer === Answer.DONT_KNOW) {
-            return 2.5;
-        } else {
-            return +answer;
-        }
     }
 }
