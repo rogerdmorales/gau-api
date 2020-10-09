@@ -16,6 +16,13 @@ export class PlaceService {
         @InjectModel('PlaceRatingHistory') private readonly placeRatingHistoryModel: Model<PlaceRatingHistory>
     ) { }
 
+    async findPlacesByPlaceIds(placeIds: string) {
+        console.log(placeIds);
+        const placeIdsArr = placeIds ? placeIds.split(',') : [];
+        console.log(placeIdsArr);
+        return this.placeModel.find({ placeId: placeIdsArr });
+    }
+
     async ratePlace(placeRating: PlaceRatingDTO, user: any) {
         let place = await this.findById(placeRating.placeId);
         const userScore = this._calculateScore(placeRating);

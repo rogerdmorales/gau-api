@@ -1,4 +1,4 @@
-import { Controller, Get, Req, UseGuards, Post, Body, Param, Put } from '@nestjs/common';
+import { Controller, Get, Req, UseGuards, Post, Body, Param, Put, Query } from '@nestjs/common';
 import { Request } from 'express';
 import { AuthGuard } from '@nestjs/passport';
 import PlaceRatingDTO from './dto/place-rating.dto';
@@ -31,6 +31,11 @@ export class PlaceController {
         return this.service.findPlaceRatingsByUser(request.user);
     }
 
+    @Get('/places/findplacebyplaceids?:placeIds')
+    getPlacesByPlaceIds(@Query() query) {
+        return this.service.findPlacesByPlaceIds(query.placeIds);
+    }
+
     @Get(':id/user/ratings')
     @UseGuards(AuthGuard())
     getPlaceRatingsByUserAndPlace(@Param() param, @Req() request: Request) {
@@ -48,7 +53,7 @@ export class PlaceController {
     likeComment(@Param() param) {
         return this.service.likeComment(param.id, param.commentId);
     }
-
+    
     @Get(':id')
     getPlace(@Param() param) {
         return this.service.findPlace(param.id);
@@ -58,5 +63,6 @@ export class PlaceController {
     getPlaceRatingsSummary(@Param() param) {
         return this.service.findPlaceRatingsSummary(param.id);
     }
+
 
 }
