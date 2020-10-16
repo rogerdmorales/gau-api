@@ -36,6 +36,28 @@ export class AuthService {
         };
     }
 
+    async renewToken(refreshToken: string) {
+        let payload;
+        try {
+            payload = this.jwtService.verify(refreshToken, { ignoreExpiration: true });
+        } catch (error) {
+            throw new HttpException('Invalid token', HttpStatus.UNAUTHORIZED);
+        }
+
+        const user = await this.userService.findByEmail(payload.username);
+
+        if (!user) {
+            throw new HttpException('Invalid token', HttpStatus.UNAUTHORIZED);
+        }
+
+        const token = this._createToken(user);
+
+        return {
+            user,
+            token
+        };
+    }
+
     async loginGoogle(idToken: string) {
         const client = new OAuth2Client(CLIENT_ID);
         
