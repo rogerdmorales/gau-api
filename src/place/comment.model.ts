@@ -8,7 +8,10 @@ export const CommentSchema = new mongoose.Schema({
     author: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     place: { type: mongoose.Schema.Types.ObjectId, ref: 'Place' },
     placeRatingHistory: { type: mongoose.Schema.Types.ObjectId, ref: 'PlaceRatingHistory' },
-    likes: { type: Number, required: false, default: 0 },
+    likes: { type: Number, required: false },
+    userLikes: [
+        { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
+    ],
     date: { type: String, required: true, default: moment().tz('America/Sao_Paulo').format('DD/MM/YYYY')},
     parent: {
         type: mongoose.Schema.Types.ObjectId,
@@ -28,6 +31,7 @@ export interface Comment {
     author: User,
     place: any,
     placeRatingHistory: PlaceRatingHistory,
+    userLikes: [],
     likes: number,
     parent: Comment,
     responses: Comment[]

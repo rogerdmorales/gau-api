@@ -50,8 +50,8 @@ export class PlaceController {
 
     @Post(':id/comments/:commentId/like')
     @UseGuards(AuthGuard())
-    likeComment(@Param() param) {
-        return this.service.likeComment(param.id, param.commentId);
+    likeComment(@Param() param, @Req() request: Request) {
+        return this.service.likeComment(param.id, param.commentId, request.user);
     }
     
     @Get(':id')

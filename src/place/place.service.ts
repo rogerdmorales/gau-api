@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Comment } from './comment.model';
@@ -107,10 +107,31 @@ export class PlaceService {
         return updatedComment;
     }
 
-    async likeComment(placeId: any, commentId: any) {
+    async likeComment(placeId: any, commentId: any, user: any) {
         const comment = await this.commentModel.findOne({ place: placeId, _id: commentId });
-        comment.likes++;
-        await this.commentModel.findByIdAndUpdate(commentId, comment);
+
+        
+        if (comment.author === user._id) {
+            throw new HttpException('Cannot like your own comment', HttpStatus.BAD_REQUEST);
+        }
+        
+        if (comment.userLikes.includes(user._id)) {
+            comment.userLikes = comment.userLikes.filter(userId => {
+                return String(userId) !== String(user._id)
+            });
+            comment.likes--;
+        } else {
+            comment.userLikes.push(user._id);
+            comment.likes = comment.likes ? comment.likes++ : 1;
+        }
+        
+        return await this.commentModel.findByIdAndUpdate(commentId, comment, { new: true })
+            .populate({
+                path: 'responses',
+                populate: { path: 'author' }
+            })
+            .populate('author')
+            .populate('placeRatingHistory');
     }
 
     async findPlace(placeId: string) {
@@ -127,8 +148,9 @@ export class PlaceService {
             })
             .populate('author')
             .populate('placeRatingHistory');
+        
         place.comments = comments;
-
+        
         return place;
     }
 
