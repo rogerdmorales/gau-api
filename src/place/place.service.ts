@@ -1,11 +1,10 @@
-import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Comment } from './comment.model';
 import PlaceRatingDTO from './dto/place-rating.dto';
-import { Answer } from './enum/answer.enum';
-import { Place } from './place.model';
 import { PlaceRatingHistory } from './place-rating-history.model';
+import { Place } from './place.model';
 
 @Injectable()
 export class PlaceService {
@@ -41,21 +40,25 @@ export class PlaceService {
             userRatings.forEach(userRating => {
                 sumScores += userRating.score;
             });
-           
+
             place.averageScore = (sumScores + userScore) / (userRatings.length + 1);
             place.reviewers++;
             placeId = place._id;
             await this.placeModel.findByIdAndUpdate(placeId, place);
         }
+        
+        let commentId = null;
+        if (placeRating.comment) {
+            const comment = {
+                content: placeRating.comment,
+                author: user._id,
+                place: placeId
+            };
+            commentId = await this.commentModel(comment).save();
 
-        const comment = {
-            content: placeRating.comment,
-            author: user._id,
-            place: placeId
-        };
-        const commentId = await this.commentModel(comment).save();
+            place.comments.push(commentId);
+        }
 
-        place.comments.push(commentId);
 
         const placeRatingHistory = {
             ...placeRating,
@@ -65,6 +68,7 @@ export class PlaceService {
         }
 
         const placeRatingHistoryId = await this.placeRatingHistoryModel(placeRatingHistory).save();
+        
         await this.commentModel.findByIdAndUpdate(commentId, { placeRatingHistory: placeRatingHistoryId });
         await this.placeModel(place).save();
     }
@@ -110,11 +114,11 @@ export class PlaceService {
     async likeComment(placeId: any, commentId: any, user: any) {
         const comment = await this.commentModel.findOne({ place: placeId, _id: commentId });
 
-        
+
         if (comment.author === user._id) {
             throw new HttpException('Cannot like your own comment', HttpStatus.BAD_REQUEST);
         }
-        
+
         if (comment.userLikes.includes(user._id)) {
             comment.userLikes = comment.userLikes.filter(userId => {
                 return String(userId) !== String(user._id)
@@ -124,7 +128,7 @@ export class PlaceService {
             comment.userLikes.push(user._id);
             comment.likes = comment.likes ? comment.likes++ : 1;
         }
-        
+
         return await this.commentModel.findByIdAndUpdate(commentId, comment, { new: true })
             .populate({
                 path: 'responses',
@@ -148,9 +152,9 @@ export class PlaceService {
             })
             .populate('author')
             .populate('placeRatingHistory');
-        
+
         place.comments = comments;
-        
+
         return place;
     }
 
@@ -171,21 +175,21 @@ export class PlaceService {
     async findPlaceRatingsSummary(placeId: string) {
         const userRatings = await this.placeRatingHistoryModel.find({ placeId });
         let question1Score = 0, question2Score = 0, question3Score = 0, question4Score = 0, question5Score = 0;
-       userRatings.forEach(userRating => {
-           question1Score += userRating.question1;
-           question2Score += userRating.question2;
-           question3Score += userRating.question3;
-           question4Score += userRating.question4;
-           question5Score += userRating.question5;
-       });
+        userRatings.forEach(userRating => {
+            question1Score += userRating.question1;
+            question2Score += userRating.question2;
+            question3Score += userRating.question3;
+            question4Score += userRating.question4;
+            question5Score += userRating.question5;
+        });
 
-       return {
-           question1: (question1Score / userRatings.length) >= 2.5,
-           question2: (question2Score / userRatings.length) >= 2.5,
-           question3: (question3Score / userRatings.length) >= 2.5,
-           question4: (question4Score / userRatings.length) >= 2.5,
-           question5: (question5Score / userRatings.length) >= 2.5,
-       }
+        return {
+            question1: (question1Score / userRatings.length) >= 2.5,
+            question2: (question2Score / userRatings.length) >= 2.5,
+            question3: (question3Score / userRatings.length) >= 2.5,
+            question4: (question4Score / userRatings.length) >= 2.5,
+            question5: (question5Score / userRatings.length) >= 2.5,
+        }
     }
 
     private _calculateScore(placeRating: PlaceRatingDTO): number {
