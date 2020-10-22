@@ -1,10 +1,9 @@
-import { Controller, Get, Req, UseGuards, Post, Body, Param, Put, Query } from '@nestjs/common';
-import { Request } from 'express';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query, Req, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { Request } from 'express';
+import { Comment } from './comment.model';
 import PlaceRatingDTO from './dto/place-rating.dto';
 import { PlaceService } from './place.service';
-import { Comment } from './comment.model';
-import { request } from 'http';
 
 @Controller('place')
 export class PlaceController {
@@ -23,6 +22,12 @@ export class PlaceController {
     @UseGuards(AuthGuard())
     updatePlaceRating(@Body() placeRating: PlaceRatingDTO, @Req() request: Request) {
         return this.service.updatePlaceRating(placeRating, request.user);
+    }
+
+    @Delete(':id/rate')
+    @UseGuards(AuthGuard())
+    deletePlaceRating(@Param() param, @Req() request: Request) {
+        return this.service.deletePlaceRating(param.id, request.user);
     }
 
     @Get('user/ratings')
